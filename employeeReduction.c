@@ -103,7 +103,7 @@ void hashTablePrintFunc(int fileNumbers)
 	printf("=========== content of hash table ===========\n");
 	for (int i = 0; i < fileNumbers; i++)
 	{
-		printf("Hash File Number:%d\n",fileNumbers);
+		printf("File Number:%d\n",i+1);
 		for (int j = 0; j < 100; j++)
 		{
 			p = hashTable[i][j];
