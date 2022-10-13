@@ -1,0 +1,5 @@
+------print the result------ 
+Word: i, Count: 1
+Word: am, Count: 1
+Word: two, Count: 2
+Word: text, Count: 1
