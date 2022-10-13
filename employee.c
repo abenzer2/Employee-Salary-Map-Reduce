@@ -17,17 +17,19 @@ struct Employee
 
 int main()
 {
-    int i = 0, n = 8;
+    int i = 0;
+
+    // Change number of employees here
+    int n = 8;
 
     int lower_salary = 4;
     int higher_salary = 9;
 
     int lower_name_index = 0;
-    int higher_name_index = 40;
+    int higher_name_index = 20;
     
-    // srand(getpid());
     
-        srand ( time(NULL) );
+    srand ( time(NULL) );
 
     struct Employee arr[n];
 
@@ -41,7 +43,9 @@ int main()
         arr[i].salary = salary_multiplier * 1000;
     }
 
-    FILE *fpt = fopen("employees2.csv", "w+");
+    // Change Generated File name here
+    char *filename = "employees3.csv";
+    FILE *fpt = fopen(filename, "w+");
     fprintf(fpt, "id, Name, salary\n");
     for (i = 0; i < n; i++)
     {

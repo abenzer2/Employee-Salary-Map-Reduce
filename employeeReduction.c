@@ -78,7 +78,6 @@ void printValues(int file_num)
 		printf("id->%s, name->%s, salary->%d\n", employees[index][i].id, employees[index][i].name, employees[index][i].salary);
 	}
 	}
-	
 }
 
 void initializeHashTablesFunc(int index)
