@@ -103,6 +103,7 @@ void hashTablePrintFunc(int fileNumbers)
 	printf("=========== content of hash table ===========\n");
 	for (int i = 0; i < fileNumbers; i++)
 	{
+		printf("Hash File Number:%d\n",fileNumbers);
 		for (int j = 0; j < 100; j++)
 		{
 			p = hashTable[i][j];
@@ -168,8 +169,6 @@ void mapperFunc(int file_num)
 			}
 			else if (employee.salary == max_salary)
 			{
-				// printf("NAME:%s",employee.name);
-				max_salary = employee.salary;
 				concatHashAt(employee, index);
 			}
 		}

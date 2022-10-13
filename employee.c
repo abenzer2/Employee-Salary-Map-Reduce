@@ -44,7 +44,7 @@ int main()
     }
 
     // Change Generated File name here
-    char *filename = "employees3.csv";
+    char *filename = "employees2.csv";
     FILE *fpt = fopen(filename, "w+");
     fprintf(fpt, "id, Name, salary\n");
     for (i = 0; i < n; i++)
