@@ -107,7 +107,7 @@ void reduceTablePrintFunc()
 		{
 			p = reduceTable[j];
 			if (p)
-				printf("Name->%s Salary->%d\n", p->name, p->salary);
+				printf("<%s, %d>\n", p->name, p->salary);
 		}
 	
 }
