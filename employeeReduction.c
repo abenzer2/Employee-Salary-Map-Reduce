@@ -32,6 +32,8 @@ struct HashTable
 
 Node *hashTable[FILENAME_NUM + 1][HASH_TABLE_MAX_SIZE];
 
+Node *reduceTable[HASH_TABLE_MAX_SIZE];
+
 void readFunc(const char *filename, int index)
 {
 	FILE *fp = fopen(filename, "r");
@@ -72,28 +74,12 @@ void printValues(int file_num)
 {
 	for (int index = 0; index < file_num; index++)
 	{
-	printf("For File  %d\n", index + 1);
-	for (int i = 0; i < 10; i++)
-	{
-		printf("id->%s, name->%s, salary->%d\n", employees[index][i].id, employees[index][i].name, employees[index][i].salary);
+		printf("For File  %d\n", index + 1);
+		for (int i = 0; i < 10; i++)
+		{
+			printf("id->%s, name->%s, salary->%d\n", employees[index][i].id, employees[index][i].name, employees[index][i].salary);
+		}
 	}
-	}
-}
-
-void initializeHashTablesFunc(int index)
-{
-	char *name = "";
-	int salary = 0;
-	unsigned int pos = 0;
-
-	Node *NewNode = (Node *)malloc(sizeof(Node));
-	memset(NewNode, 0, sizeof(Node));
-	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
-
-	strcpy(NewNode->name, name);
-	NewNode->salary = salary;
-
-	hashTable[index][pos] = NewNode;
 }
 
 void hashTablePrintFunc(int fileNumbers)
@@ -103,7 +89,7 @@ void hashTablePrintFunc(int fileNumbers)
 	printf("=========== content of hash table ===========\n");
 	for (int i = 0; i < fileNumbers; i++)
 	{
-		printf("File Number:%d\n",i+1);
+		printf("File Number:%d\n", i + 1);
 		for (int j = 0; j < 100; j++)
 		{
 			p = hashTable[i][j];
@@ -112,7 +98,34 @@ void hashTablePrintFunc(int fileNumbers)
 		}
 	}
 }
+void reduceTablePrintFunc()
+{
+	Node *p;
+	printf("=========== content of Reduce table ===========\n");
+	
+		for (int j = 0; j < HASH_TABLE_MAX_SIZE; j++)
+		{
+			p = reduceTable[j];
+			if (p)
+				printf("Name->%s Salary->%d\n", p->name, p->salary);
+		}
+	
+}
 
+void clearHashTableForFile(int file_num)
+{
+	for (int i = 0; i < HASH_TABLE_MAX_SIZE; i++)
+	{
+		hashTable[file_num][i] = NULL;
+	}
+}
+void clearReduceTable()
+{
+	for (int i = 0; i < HASH_TABLE_MAX_SIZE; i++)
+	{
+		reduceTable[i] = NULL;
+	}
+}
 void replaceHashAt(dict employee, int index)
 {
 	char *name = employee.name;
@@ -124,14 +137,30 @@ void replaceHashAt(dict employee, int index)
 
 	strcpy(NewNode->name, name);
 	NewNode->salary = salary;
+	NewNode->pNext = hashTable[index][0];
 
 	hashTable[index][0] = NewNode;
+}
+void replaceReduce(Node* employee)
+{
+	char *name = employee->name;
+	int salary = employee->salary;
+
+	Node *NewNode = (Node *)malloc(sizeof(Node));
+	memset(NewNode, 0, sizeof(Node));
+
+	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
+	strcpy(NewNode->name, name);
+
+	NewNode->salary = salary;
+	NewNode->pNext = reduceTable[0];
+
+	reduceTable[0] = NewNode;
 }
 void concatHashAt(dict employee, int index)
 {
 	char *name = employee.name;
 	int salary = employee.salary;
-
 
 	Node *NewNode = (Node *)malloc(sizeof(Node));
 	memset(NewNode, 0, sizeof(Node));
@@ -150,26 +179,84 @@ void concatHashAt(dict employee, int index)
 		}
 	}
 
+	NewNode->pNext = hashTable[index][lastPos];
 	hashTable[index][lastPos] = NewNode;
 
 	hash_size[index]++;
+}
+
+void concatReduce(Node* employee)
+{
+	char *name = employee->name;
+	int salary = employee->salary;
+
+	Node *NewNode = (Node *)malloc(sizeof(Node));
+	memset(NewNode, 0, sizeof(Node));
+	
+	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
+	strcpy(NewNode->name, name);
+	NewNode->salary = salary;
+
+	int lastPos = 0;
+
+	for (int i = 0; i < MAX_LINE_SIZE; i++)
+	{
+		Node *pHead = reduceTable[i];
+		if (reduceTable[i] != NULL)
+		{
+			lastPos++;
+		}
+	}
+
+	NewNode->pNext = reduceTable[lastPos];
+	reduceTable[lastPos] = NewNode;
 }
 void mapperFunc(int file_num)
 {
 	for (int index = 0; index < file_num; index++)
 	{
 		int max_salary = 0;
-		for (int i = 0; i < 100; i++)
+		for (int i = 0; i < HASH_TABLE_MAX_SIZE; i++)
 		{
 			dict employee = employees[index][i];
 			if (employee.salary > max_salary)
 			{
+				clearHashTableForFile(index);
 				max_salary = employee.salary;
 				replaceHashAt(employee, index);
 			}
 			else if (employee.salary == max_salary)
 			{
 				concatHashAt(employee, index);
+			}
+		}
+	}
+}
+
+void reduceFunc(int file_num)
+{
+	int i, j;
+	int max_salary = 0;
+	for (int i = 0; i < file_num; i++)
+	{
+		for (int j = 0; j < HASH_TABLE_MAX_SIZE; j++)
+		{
+			if (hashTable[i][j])
+			{
+				Node *pHead = hashTable[i][j];
+				{
+					if (pHead->salary > max_salary)
+					{
+						clearReduceTable();
+						max_salary = pHead->salary;
+						replaceReduce(pHead);
+					}
+					else if (pHead->salary == max_salary)
+					{
+						concatReduce(pHead);
+					}
+					pHead = pHead->pNext;
+				}
 			}
 		}
 	}
@@ -198,12 +285,14 @@ int main()
 		file_num++;
 	}
 
-	for (i = 0; i < file_num; i++) readFunc(filename_list_array[i], i);
+	for (i = 0; i < file_num; i++)
+		readFunc(filename_list_array[i], i);
 
 	// printValues(file_num);
 	mapperFunc(file_num);
-
-	hashTablePrintFunc(file_num);
+	reduceFunc(file_num);
+	// hashTablePrintFunc(file_num);
+	reduceTablePrintFunc();
 
 	// Clearing
 	for (i = 0; i < FILENAME_NUM; i++)
