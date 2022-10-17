@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <omp.h>
 
-#define FILENAME_LEN 50
 #define FILENAME_NUM 100
 #define HASH_TABLE_MAX_SIZE 100000
 #define MAX_LINE_SIZE 100000
@@ -17,6 +16,7 @@ typedef struct employees
 	char id[50];
 	char name[50];
 	int salary;
+	char department[50];
 } dict;
 
 dict employees[FILENAME_NUM][MAX_LINE_SIZE];
@@ -25,8 +25,10 @@ dict employees[FILENAME_NUM][MAX_LINE_SIZE];
 typedef struct HashTable Node;
 struct HashTable
 {
+	char id[50];
 	char *name;
 	int salary;
+	char department[50];
 	Node *pNext;
 };
 
@@ -62,6 +64,8 @@ void readFunc(const char *filename, int index)
 				strcpy(employees[index][i].name, field);
 			if (field_count == 2)
 				employees[index][i].salary = strtol(field, &field, 10);
+			if (field_count == 3)
+				strcpy(employees[index][i].department, field);
 			field = strtok(NULL, ",");
 			field_count++;
 		}
@@ -77,7 +81,7 @@ void printValues(int file_num)
 		printf("For File  %d\n", index + 1);
 		for (int i = 0; i < 10; i++)
 		{
-			printf("id->%s, name->%s, salary->%d\n", employees[index][i].id, employees[index][i].name, employees[index][i].salary);
+			printf("id->%s, name->%s, salary->%d, department->%s\n", employees[index][i].id, employees[index][i].name, employees[index][i].salary, employees[index][i].department);
 		}
 	}
 }
@@ -94,7 +98,7 @@ void hashTablePrintFunc(int fileNumbers)
 		{
 			p = hashTable[i][j];
 			if (p)
-				printf("Name->%s Salary->%d\n", p->name, p->salary);
+				printf("Id->%s Name->%s Salary->%d Department->%s \n",p->id, p->name, p->salary,p->department);
 		}
 	}
 }
@@ -107,7 +111,7 @@ void reduceTablePrintFunc()
 		{
 			p = reduceTable[j];
 			if (p)
-				printf("<%s, %d>\n", p->name, p->salary);
+				printf("<%s, %s, %d, %s>\n",p->id, p->name, p->salary, p->department);
 		}
 	
 }
@@ -130,12 +134,16 @@ void replaceHashAt(dict employee, int index)
 {
 	char *name = employee.name;
 	int salary = employee.salary;
+	char *id = employee.id;
+	char *department = employee.department;
 
 	Node *NewNode = (Node *)malloc(sizeof(Node));
 	memset(NewNode, 0, sizeof(Node));
 	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
 
 	strcpy(NewNode->name, name);
+	strcpy(NewNode->id, id);
+	strcpy(NewNode->department, department);
 	NewNode->salary = salary;
 	NewNode->pNext = hashTable[index][0];
 
@@ -145,12 +153,16 @@ void replaceReduce(Node* employee)
 {
 	char *name = employee->name;
 	int salary = employee->salary;
+	char *id = employee->id;
+	char *department = employee->department;
 
 	Node *NewNode = (Node *)malloc(sizeof(Node));
 	memset(NewNode, 0, sizeof(Node));
 
 	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
 	strcpy(NewNode->name, name);
+	strcpy(NewNode->id, id);
+	strcpy(NewNode->department, department);
 
 	NewNode->salary = salary;
 	NewNode->pNext = reduceTable[0];
@@ -161,12 +173,16 @@ void concatHashAt(dict employee, int index)
 {
 	char *name = employee.name;
 	int salary = employee.salary;
+	char *id = employee.id;
+	char *department = employee.department;
 
 	Node *NewNode = (Node *)malloc(sizeof(Node));
 	memset(NewNode, 0, sizeof(Node));
 	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
 
 	strcpy(NewNode->name, name);
+	strcpy(NewNode->id, id);
+	strcpy(NewNode->department, department);
 	NewNode->salary = salary;
 
 	int lastPos = 0;
@@ -189,12 +205,17 @@ void concatReduce(Node* employee)
 {
 	char *name = employee->name;
 	int salary = employee->salary;
+	
+	char *id = employee->id;
+	char *department = employee->department;
 
 	Node *NewNode = (Node *)malloc(sizeof(Node));
 	memset(NewNode, 0, sizeof(Node));
 	
 	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
 	strcpy(NewNode->name, name);
+	strcpy(NewNode->id, id);
+	strcpy(NewNode->department, department);
 	NewNode->salary = salary;
 
 	int lastPos = 0;
@@ -283,15 +304,16 @@ int main()
 	{
 		fscanf(read_filename, "%s\n", filename_list_array[file_num]);
 		file_num++;
+		// filename_list_array[2]; /// employee3.csv
 	}
 
 	for (i = 0; i < file_num; i++)
 		readFunc(filename_list_array[i], i);
 
-	// printValues(file_num);
+	printValues(file_num);
 	mapperFunc(file_num);
 	reduceFunc(file_num);
-	// hashTablePrintFunc(file_num);
+	hashTablePrintFunc(file_num);
 	reduceTablePrintFunc();
 
 	// Clearing
