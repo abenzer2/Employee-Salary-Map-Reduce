@@ -290,7 +290,7 @@ int main()
 		file_num++;
 	}
 
-	omp_set_num_threads(2);
+	omp_set_num_threads(4);
 	double time = -omp_get_wtime();
 #pragma omp parallel private(i)
 	{

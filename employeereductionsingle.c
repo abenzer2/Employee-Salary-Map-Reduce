@@ -98,7 +98,7 @@ void hashTablePrintFunc(int fileNumbers)
 		{
 			p = hashTable[i][j];
 			if (p)
-				printf("Id->%s Name->%s Salary->%d Department->%s \n",p->id, p->name, p->salary,p->department);
+				printf("Id->%s Name->%s Salary->%d Department->%s \n", p->id, p->name, p->salary, p->department);
 		}
 	}
 }
@@ -106,14 +106,13 @@ void reduceTablePrintFunc()
 {
 	Node *p;
 	printf("=========== content of Reduce table ===========\n");
-	
-		for (int j = 0; j < HASH_TABLE_MAX_SIZE; j++)
-		{
-			p = reduceTable[j];
-			if (p)
-				printf("<%s, %s, %d, %s>\n",p->id, p->name, p->salary, p->department);
-		}
-	
+
+	for (int j = 0; j < HASH_TABLE_MAX_SIZE; j++)
+	{
+		p = reduceTable[j];
+		if (p)
+			printf("<%s, %s, %d, %s>\n", p->id, p->name, p->salary, p->department);
+	}
 }
 
 void clearHashTableForFile(int file_num)
@@ -149,7 +148,7 @@ void replaceHashAt(dict employee, int index)
 
 	hashTable[index][0] = NewNode;
 }
-void replaceReduce(Node* employee)
+void replaceReduce(Node *employee)
 {
 	char *name = employee->name;
 	int salary = employee->salary;
@@ -201,17 +200,17 @@ void concatHashAt(dict employee, int index)
 	hash_size[index]++;
 }
 
-void concatReduce(Node* employee)
+void concatReduce(Node *employee)
 {
 	char *name = employee->name;
 	int salary = employee->salary;
-	
+
 	char *id = employee->id;
 	char *department = employee->department;
 
 	Node *NewNode = (Node *)malloc(sizeof(Node));
 	memset(NewNode, 0, sizeof(Node));
-	
+
 	NewNode->name = (char *)malloc(sizeof(char) * (strlen(name) + 1));
 	strcpy(NewNode->name, name);
 	strcpy(NewNode->id, id);
@@ -282,6 +281,27 @@ void reduceFunc(int file_num)
 		}
 	}
 }
+void writerFunc(FILE *fp)
+{
+	int i;
+	Node *p;
+	fprintf(fp, "-------print te result--------\n");
+#pragma omp critical
+	{
+		for (i = 0; i < HASH_TABLE_MAX_SIZE; ++i)
+		{
+			if (hashTable[FILENAME_NUM][i] != NULL)
+			{
+				p = hashTable[FILENAME_NUM][i];
+				while (p)
+				{
+					fprintf(fp, " %s, %d\n", p->name, p->salary);
+					p = p->pNext;
+				}
+			}
+		}
+	}
+}
 
 int main()
 {
@@ -310,10 +330,13 @@ int main()
 	for (i = 0; i < file_num; i++)
 		readFunc(filename_list_array[i], i);
 
-	printValues(file_num);
+	// printValues(file_num);
 	mapperFunc(file_num);
 	reduceFunc(file_num);
-	hashTablePrintFunc(file_num);
+	FILE *fp = fopen("output.txt", "W");
+
+	writerFunc(fp);
+	// hashTablePrintFunc(file_num);
 	reduceTablePrintFunc();
 
 	// Clearing
