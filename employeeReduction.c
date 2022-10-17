@@ -219,6 +219,7 @@ void mapperFunc(int file_num)
 		for (int i = 0; i < HASH_TABLE_MAX_SIZE; i++)
 		{
 			dict employee = employees[index][i];
+
 			if (employee.salary > max_salary)
 			{
 				clearHashTableForFile(index);
@@ -268,6 +269,8 @@ int main()
 	FILE *read_filename = fopen("filename_list.txt", "r");
 	char **filename_list_array = (char **)malloc(sizeof(char *) * 100);
 	int i, j;
+	
+#pragma omp parallel for
 
 	for (i = 0; i < FILENAME_NUM; i++)
 	{
@@ -285,8 +288,17 @@ int main()
 		file_num++;
 	}
 
-	for (i = 0; i < file_num; i++)
-		readFunc(filename_list_array[i], i);
+
+#pragma omp parallel private(i)
+{
+#pragma omp single nowait
+	{for (i = 0; i < file_num; i++){
+#pragma omp task
+	
+	{readFunc(filename_list_array[i], i);
+}
+}
+}
 
 	// printValues(file_num);
 	mapperFunc(file_num);
@@ -300,6 +312,7 @@ int main()
 		free(filename_list_array[i]);
 	}
 	free(filename_list_array);
+}
+return 0;
 
-	return 0;
 }
